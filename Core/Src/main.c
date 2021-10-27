@@ -27,6 +27,8 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
+
+#include "my_lsm303dlhc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +48,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static const uint8_t LSM303DLHC = (0x1E << 1);
 
 /* USER CODE END PV */
 
@@ -82,6 +83,9 @@ int main(void) {
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
+	HAL_StatusTypeDef ret;
+
+	float f_response[3];
 
 	/* USER CODE END Init */
 
@@ -102,14 +106,30 @@ int main(void) {
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	while (1) {
-		if (HAL_I2C_IsDeviceReady(&hi2c1, LSM303DLHC, 10, 10) == HAL_OK) {
-			printf("we are good to go\r\n");
-		} else {
-			printf("we are not good to go\r\n");
-		}
+	if (initializeLSM303DHLC(&hi2c1) == HAL_OK) {
+		printf("we are good to go\r\n");
+	} else {
+		printf("we are not good to go\r\n");
+	}
 
+	HAL_Delay(1000);
+
+	int16_t i16_response[3];
+	uint8_t ui8_response[6];
+
+	while (1) {
+		ret = readRawMagnetometerData(&hi2c1, i16_response, ui8_response);
+		if (ret == HAL_OK) {
+
+			for(int i = 0; i < 3; i++){
+				printf("%d ", i16_response[i]);
+			}
+
+			printf("\r\n");
+
+		}
 		HAL_Delay(1000);
+
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
