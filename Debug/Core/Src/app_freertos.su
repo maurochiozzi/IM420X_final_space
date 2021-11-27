@@ -1,2 +1,5 @@
-app_freertos.c:73:6:MX_FREERTOS_Init	8	static
-app_freertos.c:115:6:StartDefaultTask	16	static
+app_freertos.c:96:6:MX_FREERTOS_Init	8	static
+app_freertos.c:148:6:startidentifyMagneticFieldTask	16	static
+app_freertos.c:166:6:startEstimatePosition	16	static
+app_freertos.c:184:6:startSendData	16	static
+app_freertos.c:197:20:getMagneticFieldQueue	4	static

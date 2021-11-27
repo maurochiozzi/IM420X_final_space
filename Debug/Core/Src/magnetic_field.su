@@ -1,0 +1,2 @@
+magnetic_field.c:48:6:sampleMagneticField	48	static
+magnetic_field.c:64:6:identifyMagneticField	16	static
