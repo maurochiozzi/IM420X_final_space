@@ -43,7 +43,7 @@ HAL_StatusTypeDef initializeLSM303DHLC(I2C_HandleTypeDef *i2c) {
 }
 
 HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
-		int16_t *i16_raw_response, uint8_t *ui8_raw_response) {
+		int16_t *i16_raw_response, uint8_t *ui8_buf_response) {
 	HAL_StatusTypeDef ret;
 
 	uint8_t reg = OUT_X_H_M;
@@ -67,7 +67,7 @@ HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
 			ui8_16_aux.ui8[5] = ui_lsm_response[4];
 
 			memcpy(i16_raw_response, ui8_16_aux.i16, 3);
-			memcpy(ui8_raw_response, ui8_16_aux.ui8, 6);
+			memcpy(ui8_buf_response, ui8_16_aux.ui8, 6);
 		}
 	}
 
@@ -79,15 +79,18 @@ HAL_StatusTypeDef readMagnetometerData(I2C_HandleTypeDef *i2c,
 	HAL_StatusTypeDef ret;
 
 	int16_t i16_raw_response[3];
+	uint8_t ui8_raw_response[6];
 
-//	ret = readRawMagnetometerData(i2c, i16_raw_response);
+	ret = readRawMagnetometerData(i2c, i16_raw_response, ui8_raw_response);
 	if (ret == HAL_OK) {
-		// X and Y conversion
-//		f_response[0] = (float) i16_raw_response[0] / X_Y_GAIN;
-//		f_response[2] = (float) i16_raw_response[2] / X_Y_GAIN;
-
+		// X conversion
+		f_response[0] = i16_raw_response[0] / (float) X_Y_GAIN;
 		// Z conversion
-//		f_response[1] = (float) i16_raw_response[1] / Z_GAIN;
+		f_response[1] = i16_raw_response[1] / (float) Z_GAIN;
+
+		// Y conversion
+		f_response[2] = i16_raw_response[2] / (float) X_Y_GAIN;
+
 	}
 
 	return ret;

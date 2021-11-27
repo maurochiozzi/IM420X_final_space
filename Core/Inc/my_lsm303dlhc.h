@@ -38,7 +38,7 @@
  * Reference: [1] section 6, Table 17, p22-23
  */
 #define CRA_REG_M 0x00
-#define CRB_REG_M 0x00
+#define CRB_REG_M 0x01
 #define MR_REG_M  0x02
 
 /**
@@ -68,8 +68,8 @@
  *
  * Reference: [1] section 7.2.2, Table 75, p37
  */
-#define X_Y_GAIN 230
-#define Z_GAIN   205
+#define X_Y_GAIN 230 / 100.0
+#define Z_GAIN   205 / 100.0
 
 /**
  * MR_REG_M Configuration
@@ -135,7 +135,7 @@ HAL_StatusTypeDef initializeLSM303DHLC(I2C_HandleTypeDef *i2c);
  * 							initialization attempt
  */
 HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
-		int16_t *i16_raw_response, uint8_t *ui8_raw_response);
+		int16_t *i16_raw_response, uint8_t *ui8_buf_response);
 
 /**
  * Method name: 			readMagnetometerData

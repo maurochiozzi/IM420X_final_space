@@ -19,7 +19,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "i2c.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -27,8 +29,10 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
-
+#include <math.h>
+#include "FreeRTOS.h"
 #include "my_lsm303dlhc.h"
+#include "magnetic_field.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,6 +57,8 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
+__weak osMessageQueueId_t getMagneticFieldQueue(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -60,7 +66,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int _write(int file, char *ptr, int len) {
-	if (HAL_UART_Transmit_IT(&hlpuart1, (uint8_t*) ptr, len) != HAL_OK) {
+	if (HAL_UART_Transmit_IT(&huart1, (uint8_t*) ptr, len) != HAL_OK) {
 		Error_Handler();
 	}
 
@@ -98,37 +104,27 @@ int main(void) {
 
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
-	MX_LPUART1_UART_Init();
 	MX_I2C1_Init();
+	MX_USART1_UART_Init();
+	MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
 
+	HAL_TIM_Base_Start_IT(&htim6);
 	/* USER CODE END 2 */
 
+	/* Init scheduler */
+	osKernelInitialize(); /* Call init function for freertos objects (in freertos.c) */
+	MX_FREERTOS_Init();
+	/* Start scheduler */
+	osKernelStart();
+
+	/* We should never get here as control is now taken by the scheduler */
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	if (initializeLSM303DHLC(&hi2c1) == HAL_OK) {
-		printf("we are good to go\r\n");
-	} else {
-		printf("we are not good to go\r\n");
-	}
 
-	HAL_Delay(1000);
-
-	int16_t i16_response[3];
-	uint8_t ui8_response[6];
+	// Start timer
 
 	while (1) {
-		ret = readRawMagnetometerData(&hi2c1, i16_response, ui8_response);
-		if (ret == HAL_OK) {
-
-			for(int i = 0; i < 3; i++){
-				printf("%d ", i16_response[i]);
-			}
-
-			printf("\r\n");
-
-		}
-		HAL_Delay(1000);
 
 		/* USER CODE END WHILE */
 
@@ -179,9 +175,9 @@ void SystemClock_Config(void) {
 	}
 	/** Initializes the peripherals clocks
 	 */
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_LPUART1
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1
 			| RCC_PERIPHCLK_I2C1;
-	PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
+	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
 	PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
 	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
 		Error_Handler();
@@ -191,6 +187,31 @@ void SystemClock_Config(void) {
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM7 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	/* USER CODE BEGIN Callback 0 */
+
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM7) {
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
+
+	if (htim->Instance == TIM6) {
+		sampleMagneticField(readMagnetometerData, &hi2c1,
+				getMagneticFieldQueue());
+	}
+
+	/* USER CODE END Callback 1 */
+}
 
 /**
  * @brief  This function is executed in case of error occurrence.
@@ -216,7 +237,7 @@ void Error_Handler(void) {
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
