@@ -5,13 +5,11 @@
 #ifndef __MAGNETIC_FIELD__
 #define __MAGNETIC_FIELD__
 
-#define MICRO 0.000001
-
 typedef struct {
-   float x_intensity;
-   float y_intensity;
-   float z_intensity;
-} MagneticField ;
+	float x_intensity;
+	float y_intensity;
+	float z_intensity;
+} MagneticField;
 
 typedef struct {
 	float x_position;
@@ -27,8 +25,9 @@ typedef struct {
 	MagneticField magneticFieldIntensity;
 } MagneticFieldSource;
 
-
-void sampleMagneticField(HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*), I2C_HandleTypeDef *i2c, osMessageQueueId_t queueId);
+void sampleMagneticField(
+		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
+		I2C_HandleTypeDef *i2c, osMessageQueueId_t queueId);
 
 void identifyMagneticField(osMessageQueueId_t queueId);
 

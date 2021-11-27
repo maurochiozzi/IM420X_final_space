@@ -12,7 +12,7 @@ MagneticFieldSource mfNodes[] = {
 				.magneticFieldIntensity={
 						.x_intensity=0.0,
 						.y_intensity=0.0,
-						.z_intensity=8.749898437499997 * MICRO
+						.z_intensity=8.749898437499997 * 0.000001
 				}
 			},
 		[1] = {
@@ -26,7 +26,7 @@ MagneticFieldSource mfNodes[] = {
 				.magneticFieldIntensity={
 						.x_intensity=0.0,
 						.y_intensity=0.0,
-						.z_intensity=2.5925625 * MICRO
+						.z_intensity=2.5925625 * 0.000001
 				}
 			},
 		[2] = {
@@ -40,7 +40,7 @@ MagneticFieldSource mfNodes[] = {
 				.magneticFieldIntensity={
 						.x_intensity=0.0,
 						.y_intensity=0.0,
-						.z_intensity=0.9986645113145853 * MICRO
+						.z_intensity=0.9986645113145853 * 0.000001
 				}
 			}
 		};

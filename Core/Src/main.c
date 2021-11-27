@@ -58,7 +58,6 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
-__weak osMessageQueueId_t getMagneticFieldQueue(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -72,6 +71,8 @@ int _write(int file, char *ptr, int len) {
 
 	return len;
 }
+
+__weak osMessageQueueId_t getMagneticFieldQueue(void);
 /* USER CODE END 0 */
 
 /**
@@ -89,9 +90,6 @@ int main(void) {
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
-	HAL_StatusTypeDef ret;
-
-	float f_response[3];
 
 	/* USER CODE END Init */
 
@@ -123,7 +121,6 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 
 	// Start timer
-
 	while (1) {
 
 		/* USER CODE END WHILE */

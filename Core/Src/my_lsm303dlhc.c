@@ -83,6 +83,14 @@ HAL_StatusTypeDef readMagnetometerData(I2C_HandleTypeDef *i2c,
 
 	ret = readRawMagnetometerData(i2c, i16_raw_response, ui8_raw_response);
 	if (ret == HAL_OK) {
+
+#if MOCK_VALUES
+		f_response[0] = mocked_values_x[mock_value_index] * 0.000001;
+		f_response[1] = mocked_values_y[mock_value_index] * 0.000001;
+		f_response[2] = mocked_values_z[mock_value_index] * 0.000001;
+
+		mock_value_index = (mock_value_index + 1) % MOCK_SIZE;
+#else
 		// X conversion
 		f_response[0] = i16_raw_response[0] / (float) X_Y_GAIN;
 		// Z conversion
@@ -90,6 +98,7 @@ HAL_StatusTypeDef readMagnetometerData(I2C_HandleTypeDef *i2c,
 
 		// Y conversion
 		f_response[2] = i16_raw_response[2] / (float) X_Y_GAIN;
+#endif
 
 	}
 

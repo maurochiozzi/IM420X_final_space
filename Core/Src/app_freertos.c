@@ -32,6 +32,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticQueue_t osStaticMessageQDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -73,8 +74,14 @@ const osThreadAttr_t sendData_attributes = {
 };
 /* Definitions for magneticFieldIntensitySampleQueue */
 osMessageQueueId_t magneticFieldIntensitySampleQueueHandle;
+uint8_t magneticFieldIntensitySampleQueueBuffer[ 128 * sizeof( MagneticField ) ];
+osStaticMessageQDef_t magneticFieldIntensitySampleQueueControlBlock;
 const osMessageQueueAttr_t magneticFieldIntensitySampleQueue_attributes = {
-  .name = "magneticFieldIntensitySampleQueue"
+  .name = "magneticFieldIntensitySampleQueue",
+  .cb_mem = &magneticFieldIntensitySampleQueueControlBlock,
+  .cb_size = sizeof(magneticFieldIntensitySampleQueueControlBlock),
+  .mq_mem = &magneticFieldIntensitySampleQueueBuffer,
+  .mq_size = sizeof(magneticFieldIntensitySampleQueueBuffer)
 };
 
 /* Private function prototypes -----------------------------------------------*/
