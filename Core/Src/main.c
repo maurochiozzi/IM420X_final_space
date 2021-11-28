@@ -30,9 +30,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include "FreeRTOS.h"
+
 #include "my_lsm303dlhc.h"
-#include "magnetic_field.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,7 +71,7 @@ int _write(int file, char *ptr, int len) {
 	return len;
 }
 
-__weak osMessageQueueId_t getMagneticFieldQueue(void);
+__weak void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c);
 /* USER CODE END 0 */
 
 /**
@@ -107,6 +106,13 @@ int main(void) {
 	MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
 
+	if (initializeLSM303DHLC(&hi2c1) == HAL_OK) {
+		printf("we are good to go\r\n");
+	} else {
+		printf("we are not good to go\r\n");
+	}
+
+	// not the best place to have it...
 	HAL_TIM_Base_Start_IT(&htim6);
 	/* USER CODE END 2 */
 
@@ -203,8 +209,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	/* USER CODE BEGIN Callback 1 */
 
 	if (htim->Instance == TIM6) {
-		sampleMagneticField(readMagnetometerData, &hi2c1,
-				getMagneticFieldQueue());
+		sampleMagneticFieldISR(&hi2c1);
 	}
 
 	/* USER CODE END Callback 1 */

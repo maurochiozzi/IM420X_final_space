@@ -1,9 +1,15 @@
 #include "stm32g4xx_hal.h"
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
 
 #ifndef __MAGNETIC_FIELD__
 #define __MAGNETIC_FIELD__
+
+#define MAGNETIC_PERMEABILITY 1.257 * 0.000001
+#define PI_4 4 * M_PI
 
 typedef struct {
 	float x_intensity;
@@ -18,20 +24,28 @@ typedef struct {
 } SpacePosition;
 
 typedef struct {
+	float x;
+	float y;
+	float z;
+} DistanceVector;
+
+
+typedef struct {
 	int id;
 	float frequency;
-	float magnetic_moment;
+	double magnetic_moment;
+	double magnetic_cte;
 	SpacePosition position;
 	MagneticField magneticFieldIntensity;
 } MagneticFieldSource;
 
-void sampleMagneticField(
+MagneticField sampleMagneticField(
 		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
-		I2C_HandleTypeDef *i2c, osMessageQueueId_t queueId);
+		I2C_HandleTypeDef *i2c);
 
-void identifyMagneticField(osMessageQueueId_t queueId);
+MagneticFieldSource* identifyMagneticField(MagneticField *mfSamples);
 
-float getDistanceFromRSS(MagneticField node);
+double getDistanceFromRSS(MagneticFieldSource node);
 
 SpacePosition estimatePoisition(MagneticFieldSource *nodes, int qnty_nodes);
 
