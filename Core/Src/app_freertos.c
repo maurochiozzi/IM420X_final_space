@@ -40,7 +40,9 @@ typedef StaticQueue_t osStaticMessageQDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SENSOR_SAMPLE_RATE (1.0 / 220.0) // 220 Hz
+#define SAMPLE_SIZE 128
+#define DATA_SAMPLE_PERIOD (SENSOR_SAMPLE_RATE * SAMPLE_SIZE)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,26 +52,29 @@ typedef StaticQueue_t osStaticMessageQDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-MagneticFieldSource mfNodes[] = { [0] = { .id = 1, .frequency = 50,
-		.magnetic_moment = 0.6997897635871264, .magnetic_cte =
-				0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4), .position =
-				{ .x_position = 0.3, .y_position = 0.2, .z_position = 0.0 },
-		.magneticFieldIntensity = { .x_intensity = 0.0, .y_intensity = 0.0,
-				.z_intensity = 8.749898437499997 * 0.000001 } }, [1] = {
-		.id = 2, .frequency = 70, .magnetic_moment = 0.6997897635871264,
-		.magnetic_cte = 0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
-		.position = { .x_position = 0.5, .y_position = 0.5, .z_position = 0.0 },
-		.magneticFieldIntensity = { .x_intensity = 0.0, .y_intensity = 0.0,
-				.z_intensity = 2.5925625 * 0.000001 } }, [2] = { .id = 3,
-		.frequency = 90, .magnetic_moment = 0.6997897635871264, .magnetic_cte =
-				0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4), .position =
-				{ .x_position = 0.9, .y_position = 0.3, .z_position = 0.0 },
-		.magneticFieldIntensity = { .x_intensity = 0.0, .y_intensity = 0.0,
-				.z_intensity = 0.9986645113145853 * 0.000001 } } };
+MagneticFieldSource mf_nodes[] = { [0] = { .id = 1, .f_frequency = 50,
+		.d_magnetic_moment = 0.6997897635871264, .d_magnetic_cte =
+				0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
+		.sp_position = { .x = 0.0, .y = 0.0, .z = 0.0 }, .mf_intensity = { .x =
+				0.0, .y = 0.0, .z = 8.749898437499997 * 0.000001 } }, [1 ] = {
+		.id = 3, .f_frequency = 90, .d_magnetic_moment = 0.6997897635871264,
+		.d_magnetic_cte = 0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
+		.sp_position = { .x = 0.5, .y = 0.0, .z = 0.0 }, .mf_intensity = { .x =
+				0.0, .y = 0.0, .z = 2.5925625 * 0.000001 } }, [2] = { .id = 2,
+		.f_frequency = 70, .d_magnetic_moment = 0.6997897635871264,
+		.d_magnetic_cte = 0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
+		.sp_position = { .x = 0.3, .y = 0.4, .z = 0.0 }, .mf_intensity = { .x =
+				0.0, .y = 0.0, .z = 0.9986645113145853 * 0.000001 } } };
 
-MagneticFieldSource mfNodeReference;
-DistanceVector dvV, dvU;
+SpacePosition sp_rx_position = { .x = 0, .y = 0, .z = 0 };
 
+double d_mf_x_samples[SAMPLE_SIZE];
+double d_mf_y_samples[SAMPLE_SIZE];
+double d_mf_z_samples[SAMPLE_SIZE];
+
+MagneticField mf_samples_buff[SAMPLE_SIZE];
+
+uint16_t ui16_sample_index = 0;
 
 /* USER CODE END Variables */
 /* Definitions for identifyMagneti */
@@ -84,7 +89,7 @@ const osThreadAttr_t estimatePositio_attributes =
 /* Definitions for sendData */
 osThreadId_t sendDataHandle;
 const osThreadAttr_t sendData_attributes = { .name = "sendData", .priority =
-		(osPriority_t) osPriorityLow3, .stack_size = 128 * 4 };
+		(osPriority_t) osPriorityLow, .stack_size = 128 * 4 };
 /* Definitions for magneticFieldIntensitySampleQueue */
 osMessageQueueId_t magneticFieldIntensitySampleQueueHandle;
 uint8_t magneticFieldIntensitySampleQueueBuffer[128 * sizeof(MagneticField)];
@@ -95,11 +100,18 @@ const osMessageQueueAttr_t magneticFieldIntensitySampleQueue_attributes = {
 				sizeof(magneticFieldIntensitySampleQueueControlBlock), .mq_mem =
 				&magneticFieldIntensitySampleQueueBuffer, .mq_size =
 				sizeof(magneticFieldIntensitySampleQueueBuffer) };
+/* Definitions for spRXPositionMutex */
+osMutexId_t spRXPositionMutexHandle;
+const osMutexAttr_t spRXPositionMutex_attributes =
+		{ .name = "spRXPositionMutex" };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void initPositionSystem();
+__weak void initMagnetiFieldISR();
+__weak void stopMagnetiFieldISR();
+
 void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c);
+void sendPositionData();
 /* USER CODE END FunctionPrototypes */
 
 void startidentifyMagneticFieldTask(void *argument);
@@ -115,8 +127,11 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
  */
 void MX_FREERTOS_Init(void) {
 	/* USER CODE BEGIN Init */
-	initPositionSystem();
+
 	/* USER CODE END Init */
+	/* Create the mutex(es) */
+	/* creation of spRXPositionMutex */
+	spRXPositionMutexHandle = osMutexNew(&spRXPositionMutex_attributes);
 
 	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
@@ -128,6 +143,7 @@ void MX_FREERTOS_Init(void) {
 
 	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
+
 	/* USER CODE END RTOS_TIMERS */
 
 	/* Create the queue(s) */
@@ -154,6 +170,7 @@ void MX_FREERTOS_Init(void) {
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
+	initMagnetiFieldISR();
 	/* USER CODE END RTOS_THREADS */
 
 	/* USER CODE BEGIN RTOS_EVENTS */
@@ -171,10 +188,17 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_startidentifyMagneticFieldTask */
 void startidentifyMagneticFieldTask(void *argument) {
 	/* USER CODE BEGIN startidentifyMagneticFieldTask */
+
 	/* Infinite loop */
 	for (;;) {
+		if (ui16_sample_index == 128) {
+//			identifyMagneticField(d_mf_x_samples, d_mf_y_samples,
+//					d_mf_z_samples, mf_nodes, SAMPLE_SIZE);
 
-		osDelay(2000);
+			ui16_sample_index = 0;
+		}
+
+		osDelay(581);
 	}
 	/* USER CODE END startidentifyMagneticFieldTask */
 }
@@ -188,12 +212,20 @@ void startidentifyMagneticFieldTask(void *argument) {
 /* USER CODE END Header_startEstimatePosition */
 void startEstimatePosition(void *argument) {
 	/* USER CODE BEGIN startEstimatePosition */
+
 	/* Infinite loop */
 	for (;;) {
-//		printf("we are good to go\r\n");
-		estimatePoisition(mfNodes, 3);
-		osDelay(680);
+		if (osMutexAcquire(spRXPositionMutexHandle, osWaitForever) == osOK) {
+			sp_rx_position = estimatePoisition(mf_nodes);
+
+			osMutexRelease(spRXPositionMutexHandle);
+		}
+
+		osDelay(581);
+
 	}
+
+	osThreadTerminate(NULL);
 	/* USER CODE END startEstimatePosition */
 }
 
@@ -208,37 +240,44 @@ void startSendData(void *argument) {
 	/* USER CODE BEGIN startSendData */
 	/* Infinite loop */
 	for (;;) {
-		osDelay(2000);
+		if (osMutexAcquire(spRXPositionMutexHandle, osWaitForever) == osOK) {
+//				printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", spRXPosition.x, spRXPosition.y,
+//						spRXPosition.z);
+			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+			osMutexRelease(spRXPositionMutexHandle);
+		}
+
+		osDelay(581);
 	}
+
+	osThreadTerminate(NULL);
 	/* USER CODE END startSendData */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void initPositionSystem() {
-	MagneticFieldSource mfNodeReference = mfNodes[0];
-
-	double distance_x = (mfNodes[2].position.x_position
-			- mfNodeReference.position.x_position);
-	double distance_y = (mfNodes[2].position.y_position
-			- mfNodeReference.position.y_position);
-	double distance_z = (mfNodes[2].position.z_position
-			- mfNodeReference.position.z_position);
-
-	double dBaseline = sqrt(
-			pow(distance_x, 2) + pow(distance_y, 2) + pow(distance_z, 2));
-
-	DistanceVector dvV = { .x = (distance_x / dBaseline), .y = (distance_y
-			/ dBaseline), .z = (distance_z / dBaseline) };
-
-	double dvVConst = sqrt(pow(dvV.x, 2) + pow((dvV.x * dvV.x / dvV.y), 2));
-
-	DistanceVector dvU = { .x = - dvV.x / dvVConst, .y = (pow(dvV.x, 2) / dvV.y) / dvVConst };
-
-
-}
 void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
-	sampleMagneticField(readMagnetometerData, i2c);
+	MagneticField mf_sample;
+
+//	if (osMessageQueueGetSpace(magneticFieldIntensitySampleQueueHandle) > 0) {
+//		mfSample = sampleMagneticField(readMagnetometerData, i2c);
+//		osMessageQueuePut(magneticFieldIntensitySampleQueueHandle, &mfSample, 0,
+//				0);
+	if (ui16_sample_index < 128) {
+		mf_sample = sampleMagneticField(readMagnetometerData, i2c);
+
+		d_mf_x_samples[ui16_sample_index] = mf_sample.x;
+		d_mf_y_samples[ui16_sample_index] = mf_sample.y;
+		d_mf_z_samples[ui16_sample_index] = mf_sample.z;
+
+		ui16_sample_index++;
+	} else {
+		stopMagnetiFieldISR();
+	}
+}
+
+void sendPositionData() {
+
 }
 /* USER CODE END Application */
 
