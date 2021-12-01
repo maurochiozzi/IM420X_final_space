@@ -238,7 +238,9 @@ void startSendData(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
-		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+//		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
+				sp_rx_position.y, sp_rx_position.z);
 
 	}
 //		if (osMutexAcquire(spRXPositionMutexHandle, osWaitForever) == osOK) {
