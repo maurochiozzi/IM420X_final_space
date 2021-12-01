@@ -238,19 +238,11 @@ void startSendData(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
-//		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+
 		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
 				sp_rx_position.y, sp_rx_position.z);
 
 	}
-//		if (osMutexAcquire(spRXPositionMutexHandle, osWaitForever) == osOK) {
-////				printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", spRXPosition.x, spRXPosition.y,
-////						spRXPosition.z);
-//			osMutexRelease(spRXPositionMutexHandle);
-//		}
-//
-//		osDelay(581);
-//	}
 
 	osThreadTerminate(NULL);
 	/* USER CODE END startSendData */
@@ -269,10 +261,6 @@ void my22HzTimerCallback(void *argument) {
 void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	MagneticField mf_sample;
 
-//	if (osMessageQueueGetSpace(magneticFieldIntensitySampleQueueHandle) > 0) {
-//		mfSample = sampleMagneticField(readMagnetometerData, i2c);
-//		osMessageQueuePut(magneticFieldIntensitySampleQueueHandle, &mfSample, 0,
-//				0);
 
 	if (ui16_sample_index == SAMPLE_SIZE) {
 		buffer_index = (buffer_index + 1) % 2;
@@ -288,10 +276,6 @@ void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	d_mf_z_samples[buffer_index][ui16_sample_index] = mf_sample.z;
 
 	ui16_sample_index++;
-
-}
-
-void sendPositionData() {
 
 }
 /* USER CODE END Application */
