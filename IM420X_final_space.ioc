@@ -1,8 +1,9 @@
 #MicroXplorer Configuration settings - do not modify
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK,Queues01
-FREERTOS.Queues01=magneticFieldIntensitySampleQueue,128,MagneticField,0,Dynamic,NULL,NULL
-FREERTOS.Tasks01=identifyMagneti,43,128,startidentifyMagneticFieldTask,Default,NULL,Dynamic,NULL,NULL;estimatePositio,35,128,startEstimatePosition,Default,NULL,Dynamic,NULL,NULL;sendData,11,128,startSendData,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK,Mutexes01,Timers01
+FREERTOS.Mutexes01=spRXPositionMutex,Dynamic,NULL
+FREERTOS.Tasks01=identifyMagneti,43,128,startidentifyMagneticFieldTask,Default,NULL,Dynamic,NULL,NULL;estimatePositio,35,128,startEstimatePosition,Default,NULL,Dynamic,NULL,NULL;sendData,8,256,startSendData,Default,NULL,Dynamic,NULL,NULL
+FREERTOS.Timers01=my22HzTimer,my22HzTimerCallback,osTimerPeriodic,Default,NULL,Dynamic,NULL
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6
 GPIO.groupedBy=Group By Peripherals
@@ -199,8 +200,8 @@ RCC.VCOOutputFreq_Value=340000000
 SH.GPXTI13.0=GPIO_EXTI13
 SH.GPXTI13.ConfNb=1
 TIM6.IPParameters=Prescaler,PeriodNoDither
-TIM6.PeriodNoDither=10000 - 1
-TIM6.Prescaler=17000 - 1
+TIM6.PeriodNoDither=100 - 1
+TIM6.Prescaler=7727 - 1
 USART1.BaudRate=9600
 USART1.IPParameters=VirtualMode-Asynchronous,BaudRate
 USART1.VirtualMode-Asynchronous=VM_ASYNC
