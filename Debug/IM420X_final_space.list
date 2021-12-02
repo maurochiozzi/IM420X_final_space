@@ -1993,7 +1993,7 @@ void startSendData(void *argument)
  80016bc:	2001      	movs	r0, #1
  80016be:	f005 fc0d 	bl	8006edc <osThreadFlagsWait>
 
-		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
+		printf("EsPos: x=%.4f y=%.4f z=%.4f\r\n", sp_rx_position.x,
  80016c2:	4b0f      	ldr	r3, [pc, #60]	; (8001700 <startSendData+0x54>)
  80016c4:	681b      	ldr	r3, [r3, #0]
  80016c6:	4618      	mov	r0, r3
@@ -2003,7 +2003,7 @@ void startSendData(void *argument)
 				sp_rx_position.y, sp_rx_position.z);
  80016d0:	4b0b      	ldr	r3, [pc, #44]	; (8001700 <startSendData+0x54>)
  80016d2:	685b      	ldr	r3, [r3, #4]
-		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
+		printf("EsPos: x=%.4f y=%.4f z=%.4f\r\n", sp_rx_position.x,
  80016d4:	4618      	mov	r0, r3
  80016d6:	f7fe ff5f 	bl	8000598 <__aeabi_f2d>
  80016da:	4604      	mov	r4, r0
@@ -2011,7 +2011,7 @@ void startSendData(void *argument)
 				sp_rx_position.y, sp_rx_position.z);
  80016de:	4b08      	ldr	r3, [pc, #32]	; (8001700 <startSendData+0x54>)
  80016e0:	689b      	ldr	r3, [r3, #8]
-		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
+		printf("EsPos: x=%.4f y=%.4f z=%.4f\r\n", sp_rx_position.x,
  80016e2:	4618      	mov	r0, r3
  80016e4:	f7fe ff58 	bl	8000598 <__aeabi_f2d>
  80016e8:	4602      	mov	r2, r0
