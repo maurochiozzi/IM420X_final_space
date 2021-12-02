@@ -27,6 +27,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <complex.h>
+#include <math.h>
+#include <stddef.h>
 #include "my_lsm303dlhc.h"
 #include "magnetic_field.h"
 
@@ -39,9 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SENSOR_SAMPLE_RATE (1.0 / 220.0) // 220 Hz
-#define SAMPLE_SIZE 110
-#define DATA_SAMPLE_PERIOD (SENSOR_SAMPLE_RATE * SAMPLE_SIZE)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -74,9 +75,11 @@ double d_mf_z_samples[2][SAMPLE_SIZE];
 uint8_t buffer_index = 0;
 uint8_t buffer_index_to_retrive_data;
 
-double d_mf_x_input[SAMPLE_SIZE];
-double d_mf_y_input[SAMPLE_SIZE];
-double d_mf_z_input[SAMPLE_SIZE];
+double complex dc_mf_x[2][SAMPLE_SIZE] = { { 0.0 }, { 0.0 } };
+double complex dc_mf_y[2][SAMPLE_SIZE] = { { 0.0 }, { 0.0 } };
+double complex dc_mf_z[2][SAMPLE_SIZE] = { { 0.0 }, { 0.0 } };
+
+double complex dc_angle_x, dc_angle_y, dc_angle_z;
 
 MagneticField mf_samples_buff[SAMPLE_SIZE];
 
@@ -86,7 +89,7 @@ uint16_t ui16_sample_index = 0;
 /* Definitions for identifyMagneti */
 osThreadId_t identifyMagnetiHandle;
 const osThreadAttr_t identifyMagneti_attributes = { .name = "identifyMagneti",
-		.priority = (osPriority_t) osPriorityHigh3, .stack_size = 128 * 4 };
+		.priority = (osPriority_t) osPriorityHigh3, .stack_size = 1024 * 4 };
 /* Definitions for estimatePositio */
 osThreadId_t estimatePositioHandle;
 const osThreadAttr_t estimatePositio_attributes =
@@ -192,12 +195,14 @@ void startidentifyMagneticFieldTask(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
+		stopMagnetiFieldISR();
 
 		buffer_index_to_retrive_data = (buffer_index + 1) % 2;
 
-		memcpy(d_mf_x_input, d_mf_x_samples, SAMPLE_SIZE);
-		memcpy(d_mf_y_input, d_mf_y_samples, SAMPLE_SIZE);
-		memcpy(d_mf_z_input, d_mf_z_samples, SAMPLE_SIZE);
+		identifyMagneticField(d_mf_x_samples[buffer_index_to_retrive_data],
+				d_mf_y_samples[buffer_index_to_retrive_data],
+				d_mf_z_samples[buffer_index_to_retrive_data], mf_nodes,
+				SAMPLE_SIZE);
 	}
 	/* USER CODE END startidentifyMagneticFieldTask */
 }
@@ -261,7 +266,6 @@ void my22HzTimerCallback(void *argument) {
 void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	MagneticField mf_sample;
 
-
 	if (ui16_sample_index == SAMPLE_SIZE) {
 		buffer_index = (buffer_index + 1) % 2;
 		ui16_sample_index = 0;
@@ -274,6 +278,22 @@ void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	d_mf_x_samples[buffer_index][ui16_sample_index] = mf_sample.x;
 	d_mf_y_samples[buffer_index][ui16_sample_index] = mf_sample.y;
 	d_mf_z_samples[buffer_index][ui16_sample_index] = mf_sample.z;
+
+	for (int i = 0; i < ui16_sample_index; i++) {
+		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
+
+		dc_mf_z[buffer_index][i] += 2
+				* (mf_sample.z * cexp(-dc_angle_z))/ SAMPLE_SIZE;
+	}
+
+	for (int i = 0; i < ui16_sample_index; i++) {
+		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
+
+		dc_mf_z[buffer_index][ui16_sample_index] +=
+				2
+						* (d_mf_z_samples[buffer_index][i]
+								* cexp(-dc_angle_z))/ SAMPLE_SIZE;
+	}
 
 	ui16_sample_index++;
 

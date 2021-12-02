@@ -1,5 +1,4 @@
 #include "magnetic_field.h"
-#include "dft.h"
 
 MagneticField sampleMagneticField(
 		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
@@ -21,21 +20,7 @@ MagneticField sampleMagneticField(
 void identifyMagneticField(double *d_mf_x_samples, double *d_mf_y_samples, double *d_mf_z_samples,
 		MagneticFieldSource *mf_nodes, uint16_t ui16_sample_size) {
 
-	double inimag[ui16_sample_size];
 
-	double f_mf_intensity_z_real_out[ui16_sample_size];
-	double f_mf_intensity_z_img_out[ui16_sample_size];
-
-
-	compute_dft_real_pair(d_mf_z_samples, inimag, f_mf_intensity_z_real_out,
-			f_mf_intensity_z_img_out, ui16_sample_size);
-
-	f_mf_intensity_z_real_out;
-	f_mf_intensity_z_img_out;
-
-	// perform dft
-
-	// identify fields and intensity
 }
 
 double getDistanceFromRSS(MagneticFieldSource node) {
