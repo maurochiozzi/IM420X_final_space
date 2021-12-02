@@ -41,7 +41,8 @@ Core/Src/app_freertos.o: ../Core/Src/app_freertos.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- ../Core/Inc/magnetic_field.h
+ ../Core/Inc/my_lsm303dlhc.h ../Core/Inc/magnetic_field.h \
+ ../Core/Inc/dft.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 
@@ -129,4 +130,8 @@ Core/Src/app_freertos.o: ../Core/Src/app_freertos.c \
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
+../Core/Inc/my_lsm303dlhc.h:
+
 ../Core/Inc/magnetic_field.h:
+
+../Core/Inc/dft.h:

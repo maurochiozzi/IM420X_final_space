@@ -41,7 +41,8 @@ Core/Src/magnetic_field.o: ../Core/Src/magnetic_field.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
+ ../Core/Inc/dft.h
 
 ../Core/Inc/magnetic_field.h:
 
@@ -128,3 +129,5 @@ Core/Src/magnetic_field.o: ../Core/Src/magnetic_field.c \
 ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
+
+../Core/Inc/dft.h:

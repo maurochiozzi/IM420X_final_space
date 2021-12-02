@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/app_freertos.c \
+../Core/Src/dft.c \
 ../Core/Src/gpio.c \
 ../Core/Src/i2c.c \
 ../Core/Src/magnetic_field.c \
@@ -22,6 +23,7 @@ C_SRCS += \
 
 OBJS += \
 ./Core/Src/app_freertos.o \
+./Core/Src/dft.o \
 ./Core/Src/gpio.o \
 ./Core/Src/i2c.o \
 ./Core/Src/magnetic_field.o \
@@ -38,6 +40,7 @@ OBJS += \
 
 C_DEPS += \
 ./Core/Src/app_freertos.d \
+./Core/Src/dft.d \
 ./Core/Src/gpio.d \
 ./Core/Src/i2c.d \
 ./Core/Src/magnetic_field.d \
