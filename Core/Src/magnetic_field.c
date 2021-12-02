@@ -17,10 +17,16 @@ MagneticField sampleMagneticField(
 	return mf_sample;
 }
 
-void identifyMagneticField(double *d_mf_x_samples, double *d_mf_y_samples, double *d_mf_z_samples,
-		MagneticFieldSource *mf_nodes, uint16_t ui16_sample_size) {
+void identifyMagneticField(double complex *d_mf_x_samples, double complex *d_mf_y_samples, double complex *d_mf_z_samples,
+		MagneticFieldSource *mf_nodes) {
 
+	for(int i = 0; i < 3; i++){
+		int bin = (int) mf_nodes[i].i_frequency / 2;
 
+		double complex value = d_mf_z_samples[bin];
+
+		mf_nodes[i].mf_intensity.z = cabs(value);
+	}
 }
 
 double getDistanceFromRSS(MagneticFieldSource node) {

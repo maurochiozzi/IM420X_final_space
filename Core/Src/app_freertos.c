@@ -52,16 +52,16 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-MagneticFieldSource mf_nodes[] = { [0] = { .id = 1, .f_frequency = 50,
+MagneticFieldSource mf_nodes[] = { [0] = { .id = 1, .i_frequency = 30,
 		.d_magnetic_moment = 0.6997897635871264, .d_magnetic_cte =
 				0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
 		.sp_position = { .x = 0.0, .y = 0.0, .z = 0.0 }, .mf_intensity = { .x =
 				0.0, .y = 0.0, .z = 8.749898437499997 * 0.000001 } }, [1 ] = {
-		.id = 3, .f_frequency = 90, .d_magnetic_moment = 0.6997897635871264,
+		.id = 3, .i_frequency = 50, .d_magnetic_moment = 0.6997897635871264,
 		.d_magnetic_cte = 0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
 		.sp_position = { .x = 0.5, .y = 0.0, .z = 0.0 }, .mf_intensity = { .x =
 				0.0, .y = 0.0, .z = 2.5925625 * 0.000001 } }, [2] = { .id = 2,
-		.f_frequency = 70, .d_magnetic_moment = 0.6997897635871264,
+		.i_frequency = 80, .d_magnetic_moment = 0.6997897635871264,
 		.d_magnetic_cte = 0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
 		.sp_position = { .x = 0.3, .y = 0.4, .z = 0.0 }, .mf_intensity = { .x =
 				0.0, .y = 0.0, .z = 0.9986645113145853 * 0.000001 } } };
@@ -199,10 +199,9 @@ void startidentifyMagneticFieldTask(void *argument) {
 
 		buffer_index_to_retrive_data = (buffer_index + 1) % 2;
 
-		identifyMagneticField(d_mf_x_samples[buffer_index_to_retrive_data],
-				d_mf_y_samples[buffer_index_to_retrive_data],
-				d_mf_z_samples[buffer_index_to_retrive_data], mf_nodes,
-				SAMPLE_SIZE);
+		identifyMagneticField(dc_mf_x[buffer_index_to_retrive_data],
+				dc_mf_y[buffer_index_to_retrive_data],
+				dc_mf_z[buffer_index_to_retrive_data], mf_nodes);
 	}
 	/* USER CODE END startidentifyMagneticFieldTask */
 }
@@ -279,21 +278,23 @@ void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	d_mf_y_samples[buffer_index][ui16_sample_index] = mf_sample.y;
 	d_mf_z_samples[buffer_index][ui16_sample_index] = mf_sample.z;
 
-	for (int i = 0; i < ui16_sample_index; i++) {
-		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
+//	for (int i = 0; i < ui16_sample_index; i++) {
+//		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
+//
+//		dc_mf_z[buffer_index][i] += 2
+//				* (mf_sample.z * cexp(-dc_angle_z))/ SAMPLE_SIZE;
+//	}
+//
+//	for (int i = 0; i < ui16_sample_index; i++) {
+//		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
+//
+//		dc_mf_z[buffer_index][ui16_sample_index] +=
+//				2
+//						* (d_mf_z_samples[buffer_index][i]
+//								* cexp(-dc_angle_z))/ SAMPLE_SIZE;
+//	}
 
-		dc_mf_z[buffer_index][i] += 2
-				* (mf_sample.z * cexp(-dc_angle_z))/ SAMPLE_SIZE;
-	}
-
-	for (int i = 0; i < ui16_sample_index; i++) {
-		dc_angle_z = 2 * I * M_PI * ui16_sample_index * i / SAMPLE_SIZE;
-
-		dc_mf_z[buffer_index][ui16_sample_index] +=
-				2
-						* (d_mf_z_samples[buffer_index][i]
-								* cexp(-dc_angle_z))/ SAMPLE_SIZE;
-	}
+	computeDFT(mf_sample.z, dc_mf_z[buffer_index], (int) ui16_sample_index, SAMPLE_SIZE);
 
 	ui16_sample_index++;
 
