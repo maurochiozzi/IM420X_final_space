@@ -150,7 +150,7 @@ HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
  * Input params:			I2C_HandleTypeDef *i2c
  * 							The I2C pointer which the LSM303DHLC is connected to
  *
- * 							float *i16_response
+ * 							double *d_response
  * 							The array composed by three float elements to store
  * 							the read value.
  *
@@ -165,7 +165,7 @@ HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
  * 							initialization attempt
  */
 HAL_StatusTypeDef readMagnetometerData(I2C_HandleTypeDef *i2c,
-		float *f_response);
+		double *d_response);
 
 
 #endif

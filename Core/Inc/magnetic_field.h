@@ -1,15 +1,24 @@
 #include "stm32g4xx_hal.h"
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
+#include "dft.h"
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <complex.h>
+#include <stddef.h>
+
 
 #ifndef __MAGNETIC_FIELD__
 #define __MAGNETIC_FIELD__
 
 #define MAGNETIC_PERMEABILITY 1.257 * 0.000001
 #define PI_4 4 * M_PI
+
+#define SENSOR_SAMPLE_RATE 220.0
+#define SENSOR_SAMPLE_PERIOD (1.0 / SENSOR_SAMPLE_RATE) // 220 Hz
+#define SAMPLE_SIZE 110
+#define DATA_SAMPLE_PERIOD (SENSOR_SAMPLE_PERIOD * SAMPLE_SIZE)
 
 typedef struct {
 	double x;
@@ -31,7 +40,7 @@ typedef struct {
 
 typedef struct {
 	int id;
-	float f_frequency;
+	int i_frequency;
 	double d_magnetic_moment;
 	double d_magnetic_cte;
 	SpacePosition sp_position;
@@ -39,12 +48,11 @@ typedef struct {
 } MagneticFieldSource;
 
 MagneticField sampleMagneticField(
-		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
+		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, double*),
 		I2C_HandleTypeDef *i2c);
 
-void identifyMagneticField(double *d_mf_x_samples, double *d_mf_y_samples,
-		double *d_mf_z_samples, MagneticFieldSource *mf_nodes,
-		uint16_t ui16_sample_size);
+void identifyMagneticField(double complex *d_mf_x_dft, double complex *d_mf_y_dft, double complex *d_mf_z_dft,
+		MagneticFieldSource *mf_nodes);
 
 double getDistanceFromRSS(MagneticFieldSource node);
 
