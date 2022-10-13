@@ -94,6 +94,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
       }
     }
   }
+
  /* Return function status */
   return status;
 }
@@ -122,4 +123,3 @@ void HAL_ResumeTick(void)
   __HAL_TIM_ENABLE_IT(&htim7, TIM_IT_UPDATE);
 }
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -96,7 +96,7 @@
 #define OUT_Y_L_M 0x08
 
 
-#define MOCK_VALUES 1
+#define MOCK_VALUES 0
 #define MOCK_SIZE 256
 
 /**

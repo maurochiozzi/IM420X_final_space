@@ -301,4 +301,3 @@ void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 }
 /* USER CODE END Application */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
