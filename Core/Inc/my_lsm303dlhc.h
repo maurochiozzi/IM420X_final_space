@@ -20,7 +20,6 @@
 #ifndef __MY_LSM303DLHC_H__
 #define __MY_LSM303DLHC_H__
 
-
 /**
  * I2C slave address for interface
  *
@@ -40,7 +39,7 @@
  */
 #define CRA_REG_M 0x00
 #define CRB_REG_M 0x01
-#define MR_REG_M  0x02
+#define MR_REG_M 0x02
 
 /**
  * Operation values for configuration.
@@ -62,20 +61,24 @@
  *
  * Reference: [1] section 7.2.2, Table 75, p37
  */
-#define CRB_REG_M_CONFIG 0b00011100
+#define CRB_REG_M_CONFIG 0b11100000
 
 /**
- * Define the gains for each axis according to the FS chosen
+ * Define the gains for each axis according to the FS chosen.
+ *
+ * LSB / Gauss
+ *
+ * 100.0 is the conversion from gauss to micro tesla.
  *
  * Reference: [1] section 7.2.2, Table 75, p37
  */
 #define X_Y_GAIN 230 / 100.0
-#define Z_GAIN   205 / 100.0
+#define Z_GAIN 205 / 100.0
 
 /**
  * MR_REG_M Configuration
  *
- * COntinuous-conversion mode
+ * Continuous-conversion mode
  *
  * Reference: [1] section 7.2.3, Table 78, p37-38
  */
@@ -94,7 +97,6 @@
 #define OUT_Z_L_M 0x06
 #define OUT_Y_H_M 0x07
 #define OUT_Y_L_M 0x08
-
 
 #define MOCK_VALUES 0
 #define MOCK_SIZE 256
@@ -140,7 +142,7 @@ HAL_StatusTypeDef initializeLSM303DHLC(I2C_HandleTypeDef *i2c);
  * 							initialization attempt
  */
 HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
-		int16_t *i16_raw_response, uint8_t *ui8_buf_response);
+										  int16_t *i16_raw_response, uint8_t *ui8_buf_response);
 
 /**
  * Method name: 			readMagnetometerData
@@ -165,7 +167,6 @@ HAL_StatusTypeDef readRawMagnetometerData(I2C_HandleTypeDef *i2c,
  * 							initialization attempt
  */
 HAL_StatusTypeDef readMagnetometerData(I2C_HandleTypeDef *i2c,
-		double *d_response);
-
+		float *d_response);
 
 #endif
