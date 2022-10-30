@@ -1,4 +1,4 @@
-../Core/Src/magnetic_field.c:3:15:sampleMagneticField	120	static
-../Core/Src/magnetic_field.c:20:6:identifyMagneticField	56	static
-../Core/Src/magnetic_field.c:32:8:getDistanceFromRSS	16	static
-../Core/Src/magnetic_field.c:38:15:estimatePoisition	152	static
+../Core/Src/magnetic_field.c:3:15:sampleMagneticField	72	static
+../Core/Src/magnetic_field.c:21:6:identifyMagneticField	56	static
+../Core/Src/magnetic_field.c:33:7:getDistanceFromRSS	24	static
+../Core/Src/magnetic_field.c:39:15:estimatePoisition	120	static

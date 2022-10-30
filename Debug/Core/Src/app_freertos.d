@@ -42,7 +42,7 @@ Core/Src/app_freertos.o: ../Core/Src/app_freertos.c \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Core/Inc/my_lsm303dlhc.h ../Core/Inc/magnetic_field.h \
- ../Core/Inc/dft.h
+ ../Core/Inc/dft.h ../Core/Inc/usart.h ../Core/Inc/main.h
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 ../Core/Inc/FreeRTOSConfig.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
@@ -89,3 +89,5 @@ Core/Src/app_freertos.o: ../Core/Src/app_freertos.c \
 ../Core/Inc/my_lsm303dlhc.h:
 ../Core/Inc/magnetic_field.h:
 ../Core/Inc/dft.h:
+../Core/Inc/usart.h:
+../Core/Inc/main.h:
