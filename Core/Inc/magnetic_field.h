@@ -1,7 +1,6 @@
 #include "stm32g4xx_hal.h"
 #include "FreeRTOS.h"
 #include "cmsis_os.h"
-#include "dft.h"
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -21,10 +20,16 @@
 #define DATA_SAMPLE_PERIOD (SENSOR_SAMPLE_PERIOD * SAMPLE_SIZE)
 
 typedef struct {
-	double x;
-	double y;
-	double z;
+	float x;
+	float y;
+	float z;
 } MagneticField;
+
+typedef struct {
+	float complex x;
+	float complex y;
+	float complex z;
+} MagneticFieldComplex;
 
 typedef struct {
 	float x;
@@ -48,13 +53,13 @@ typedef struct {
 } MagneticFieldSource;
 
 MagneticField sampleMagneticField(
-		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, double*),
+		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
 		I2C_HandleTypeDef *i2c);
 
-void identifyMagneticField(double complex *d_mf_x_dft, double complex *d_mf_y_dft, double complex *d_mf_z_dft,
+void identifyMagneticField(float complex *d_mf_x_dft, float complex *d_mf_y_dft, float complex *d_mf_z_dft,
 		MagneticFieldSource *mf_nodes);
 
-double getDistanceFromRSS(MagneticFieldSource node);
+float getDistanceFromRSS(MagneticFieldSource node);
 
 SpacePosition estimatePoisition(MagneticFieldSource *nodes);
 
