@@ -18,20 +18,23 @@ MagneticField sampleMagneticField(
 	return mf_sample;
 }
 
-void identifyMagneticField(float complex *d_mf_x_dft, float complex *d_mf_y_dft,
-		float complex *d_mf_z_dft, MagneticFieldSource *mf_nodes) {
+void identifyMagneticField(MagneticFieldComplex *mfc_dft, MagneticFieldSource *mf_nodes) {
 
 	for (int i = 0; i < 3; i++) {
 		int bin = (int) mf_nodes[i].i_frequency / 2;
 
-		float complex value = d_mf_z_dft[bin];
+		MagneticFieldComplex value = mfc_dft[bin];
 
-		mf_nodes[i].mf_intensity.z = cabs(value);
+		mf_nodes[i].mf_intensity.x = cabs(value.x);
+		mf_nodes[i].mf_intensity.y = cabs(value.y);
+		mf_nodes[i].mf_intensity.z = cabs(value.z);
 	}
 }
 
 float getDistanceFromRSS(MagneticFieldSource node) {
-	float distance = cbrt(node.d_magnetic_cte / node.mf_intensity.z);
+	float total_intensity = sqrt(pow(node.mf_intensity.x, 2) + pow(node.mf_intensity.y, 2) + pow(node.mf_intensity.z, 2));
+
+	float distance = cbrt(node.d_magnetic_cte / total_intensity * 1000000);
 
 	return distance;
 }
@@ -45,13 +48,17 @@ SpacePosition estimatePoisition(MagneticFieldSource *nodes) {
 		d_distances[nodeIndex] = getDistanceFromRSS(nodes[nodeIndex]);
 	}
 
-	sp_rx_position.x = (pow(d_distances[0], 2) - pow(d_distances[1], 2)
+	/*sp_rx_position.x = (pow(d_distances[0], 2) - pow(d_distances[1], 2)
 			+ pow(nodes[1].sp_position.x, 2)) / (2 * nodes[1].sp_position.x);
 	sp_rx_position.y = (pow(d_distances[0], 2) - pow(d_distances[2], 2)
 			+ pow(nodes[2].sp_position.x, 2) + pow(nodes[2].sp_position.y, 2)
 			- 2 * nodes[2].sp_position.x * sp_rx_position.x)
 			/ (2 * nodes[2].sp_position.y);
-	sp_rx_position.z = 0;
+	sp_rx_position.z = 0;*/
+
+	sp_rx_position.x = d_distances[0];
+	sp_rx_position.y = d_distances[1];
+	sp_rx_position.z = d_distances[2];
 
 	return sp_rx_position;
 }

@@ -54,8 +54,39 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+MagneticFieldSource mf_nodes[] = {
+		[0] = {
+			.id = 1,
+			.i_frequency = 20,
+			.d_magnetic_moment = 0.3079766512291005,
+			.d_magnetic_cte =
+					1.581938 * 0.3079766512291005 * MAGNETIC_PERMEABILITY / (PI_4),
+			.sp_position = { .x = 0.0, .y = 0.0, .z = 0.0 },
+			.mf_intensity = { .x = 0.0, .y = 0.0, .z = 0.0 }
+			},
+		[1] = {
+			.id = 3,
+			.i_frequency = 50,
+			.d_magnetic_moment = 0.6997897635871264,
+			.d_magnetic_cte =
+					0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
+			.sp_position = { .x = 0.0, .y = 0.0, .z = 0.0 },
+			.mf_intensity = { .x = 0.0, .y = 0.0, .z = 0.0 }
+			},
+		[2] = {
+			.id = 2,
+			.i_frequency = 80,
+			.d_magnetic_moment = 0.6997897635871264,
+			.d_magnetic_cte =
+					0.6997897635871264 * MAGNETIC_PERMEABILITY / (PI_4),
+			.sp_position = { .x = 0.0, .y = 0.0, .z = 0.0 },
+			.mf_intensity = { .x = 0.0, .y = 0.0, .z = 0.0}
+			}
+	};
 
-//MagneticField mf_samples[2][SAMPLE_SIZE];
+
+SpacePosition sp_rx_position = { .x = 0, .y = 0, .z = 0 };
+
 MagneticFieldComplex cmf_samples[2][SAMPLE_SIZE];
 MagneticField mf_samples_buff[2][SAMPLE_SIZE];
 
@@ -174,13 +205,14 @@ void startidentifyMagneticFieldTask(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
-		stopMagnetiFieldISR();
 
 		buffer_index_to_retrive_data = (buffer_index + 1) % 2;
 
-		//identifyMagneticField(dc_mf_x[buffer_index_to_retrive_data],
-		//		dc_mf_y[buffer_index_to_retrive_data],
-		//		dc_mf_z[buffer_index_to_retrive_data], mf_nodes);
+		identifyMagneticField(cmf_samples[buffer_index_to_retrive_data], mf_nodes);
+
+		initMagnetiFieldISR();
+
+		osThreadFlagsSet(estimatePositioHandle, 0x0001U);
 	}
 	/* USER CODE END startidentifyMagneticFieldTask */
 }
@@ -199,9 +231,11 @@ void startEstimatePosition(void *argument) {
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
 		if (osMutexAcquire(spRXPositionMutexHandle, osWaitForever) == osOK) {
-			// sp_rx_position = estimatePoisition(mf_nodes);
+			sp_rx_position = estimatePoisition(mf_nodes);
 
 			osMutexRelease(spRXPositionMutexHandle);
+
+			osThreadFlagsSet(sendDataHandle, 0x0001U);
 		}
 	}
 
@@ -222,9 +256,9 @@ void startSendData(void *argument) {
 	for (;;) {
 		osThreadFlagsWait(0x0001U, osFlagsWaitAny, osWaitForever);
 
-		printf("so far, so good running\r\n");
-		//printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
-		//		sp_rx_position.y, sp_rx_position.z);
+
+		printf("EsPos: x=%.2f y=%.2f z=%.2f\r\n", sp_rx_position.x,
+				sp_rx_position.y, sp_rx_position.z);
 
 		buffer_index_to_retrive_data = (buffer_index + 1) % 2;
 
@@ -251,8 +285,8 @@ void startSendData(void *argument) {
 /* my22HzTimerCallback function */
 void my22HzTimerCallback(void *argument) {
 	/* USER CODE BEGIN my22HzTimerCallback */
-	//osThreadFlagsSet(estimatePositioHandle, 0x0001U);
-	//osThreadFlagsSet(sendDataHandle, 0x0001U);
+	//
+	//
 	/* USER CODE END my22HzTimerCallback */
 }
 
@@ -260,12 +294,15 @@ void my22HzTimerCallback(void *argument) {
 /* USER CODE BEGIN Application */
 void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 	if (ui16_sample_index == SAMPLE_SIZE) {
-		osThreadFlagsSet(sendDataHandle, 0x0001U);
+
+		stopMagnetiFieldISR();
+		osThreadFlagsSet(identifyMagnetiHandle, 0x0001U);
 
 		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
 		buffer_index = (buffer_index + 1) % 2;
 		ui16_sample_index = 0;
+
 	}
 
 	mf_samples_buff[buffer_index][ui16_sample_index] = sampleMagneticField(
