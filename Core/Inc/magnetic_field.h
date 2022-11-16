@@ -11,7 +11,7 @@
 #ifndef __MAGNETIC_FIELD__
 #define __MAGNETIC_FIELD__
 
-#define MAGNETIC_PERMEABILITY 1.257 * 0.000001
+#define MAGNETIC_PERMEABILITY 1.257 * pow(10, -6)
 #define PI_4 4 * M_PI
 
 #define SENSOR_SAMPLE_RATE 220.0
@@ -56,8 +56,7 @@ MagneticField sampleMagneticField(
 		HAL_StatusTypeDef (*readMagneticSensor)(I2C_HandleTypeDef*, float*),
 		I2C_HandleTypeDef *i2c);
 
-void identifyMagneticField(float complex *d_mf_x_dft, float complex *d_mf_y_dft, float complex *d_mf_z_dft,
-		MagneticFieldSource *mf_nodes);
+void identifyMagneticField(MagneticFieldComplex *mfc_dft, MagneticFieldSource *mf_nodes);
 
 float getDistanceFromRSS(MagneticFieldSource node);
 
