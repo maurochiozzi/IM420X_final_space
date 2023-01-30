@@ -300,9 +300,20 @@ void sampleMagneticFieldISR(I2C_HandleTypeDef *i2c) {
 
 		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
-		buffer_index = (buffer_index + 1) % 2;
+
 		ui16_sample_index = 0;
 
+		for(int i = 0; i < SAMPLE_SIZE; i++){
+			cmf_samples[buffer_index][i].x = 0;
+			cmf_samples[buffer_index][i].y = 0;
+			cmf_samples[buffer_index][i].z = 0;
+
+			mf_samples_buff[buffer_index][i].x = 0;
+			mf_samples_buff[buffer_index][i].y = 0;
+			mf_samples_buff[buffer_index][i].z = 0;
+		}
+
+		buffer_index = (buffer_index + 1) % 2;
 	}
 
 	mf_samples_buff[buffer_index][ui16_sample_index] = sampleMagneticField(

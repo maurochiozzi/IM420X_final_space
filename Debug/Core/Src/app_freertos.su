@@ -1,6 +1,6 @@
-../Core/Src/app_freertos.c:110:6:MX_FREERTOS_Init	8	static
-../Core/Src/app_freertos.c:171:6:startidentifyMagneticFieldTask	16	static
-../Core/Src/app_freertos.c:195:6:startEstimatePosition	16	static
-../Core/Src/app_freertos.c:219:6:startSendData	16	static
-../Core/Src/app_freertos.c:252:6:my22HzTimerCallback	16	static
-../Core/Src/app_freertos.c:261:6:sampleMagneticFieldISR	32	static
+../Core/Src/app_freertos.c:141:6:MX_FREERTOS_Init	8	static
+../Core/Src/app_freertos.c:202:6:startidentifyMagneticFieldTask	16	static
+../Core/Src/app_freertos.c:227:6:startEstimatePosition	16	static
+../Core/Src/app_freertos.c:253:6:startSendData	48	static
+../Core/Src/app_freertos.c:286:6:my22HzTimerCallback	16	static
+../Core/Src/app_freertos.c:295:6:sampleMagneticFieldISR	40	static
